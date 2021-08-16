@@ -41,7 +41,7 @@ app.use('/subidas', express.static('uploads'));
 
 // Configuración de Mongoose y Multer
 mongoose.connect(secretMongoDB, {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false})
-.then(() => console.log("Conectado"))
+.then(() => console.log("Conectado a la base de datos"))
 .catch(err => console.log('Something went wrong' + err))
 
 // Express Session
@@ -71,6 +71,7 @@ const herramientas = require("./routes/herramientas");
 app.use('/api/herramientas', herramientas);
 
 app.set('puerto', process.env.PORT || 80);
-app.listen(app.get('puerto'), () => {
-  console.log('Example app listening on port'+ app.get('puerto'));
+app.listen(app.get('puerto'), err => {
+  if(err) throw err;
+  console.log("Servidor ejecutándose");
 });
