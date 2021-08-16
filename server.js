@@ -39,11 +39,6 @@ app.use(express.urlencoded({extended: true}))
 app.use(express.json());
 app.use('/subidas', express.static('uploads'));
 
-// Si estamos en producción, sirves el contenido estático
-if(process.env.NODE_ENV === 'production'){
-    app.use(express.static('client/dist'))
-}
-
 // Configuración de Mongoose y Multer
 mongoose.connect(secretMongoDB, {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false})
 .then(() => console.log("Conectado"))
@@ -75,7 +70,7 @@ app.use('/api/talleres', talleres);
 const herramientas = require("./routes/herramientas");
 app.use('/api/herramientas', herramientas);
 
-app.set('puerto', process.env.PORT || 3000);
+app.set('puerto', process.env.PORT || 80);
 app.listen(app.get('puerto'), () => {
   console.log('Example app listening on port'+ app.get('puerto'));
 });
