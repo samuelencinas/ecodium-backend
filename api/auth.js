@@ -4,7 +4,6 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require('passport-google-oauth2').Strategy;
 const GitHubStrategy = require('passport-github').Strategy;
-const MetamaskStrategy = require('passport-metamask').Strategy;
 const dotenv = require('dotenv').config({path: "./.env"});
 
 // SERIALIZACIÓN DE USUARIOS 
@@ -129,23 +128,6 @@ passport.use('github', new GitHubStrategy({
       })
     })
 );
-
-// ACCESO UNIFICADO DESCENTRALIZADO / Estrategia con Metamask (4)
-passport.use('metamask', new MetamaskStrategy(
-  (metamask_address, done) => {
-      console.log("a");
-    Usuario.findOne({ direccionEth: metamask_address }).then((usuarioActual) => {
-        if(usuarioActual){
-            done(null, usuarioActual);
-        } else {
-            const nuevoUsuario = new Usuario({ nombreUsuario: 'ETH user', direccionEth: metamask_address, nivel: 1, rol: "player", exp: 0, logros: [], rank: "Sin rango"});
-            nuevoUsuario.save().then((usuarioCreado) => {
-              done(null, usuarioCreado);
-            })
-        }
-    }) 
-  }
-));
 
 
 module.exports = passport;
