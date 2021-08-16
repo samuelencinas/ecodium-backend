@@ -6,7 +6,6 @@
   "scripts": {
     "serve": "concurrently \"env-cmd nodemon server.js\" \"cd client && npm run serve --hot\"",
     "prueba": "env-cmd nodemon server.js",
-    "heroku-postbuild": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "devbabel": "nodemon server.js --exec babel-node"
   },
