@@ -70,7 +70,7 @@ app.use('/api/talleres', talleres);
 const herramientas = require("./routes/herramientas");
 app.use('/api/herramientas', herramientas);
 
-app.set('puerto', process.env.PORT || 80);
+app.set('puerto', process.env.PORT || 3000);
 app.listen(app.get('puerto'), err => {
   if(err) throw err;
   console.log("Servidor ejecutándose");
