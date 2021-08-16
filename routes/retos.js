@@ -1,3 +1,8 @@
+/**
+ * ECODIUM - TFG Samuel Encinas
+ * RUTAS DE LA API: Retos
+ */
+
 const express = require("express");
 const router = express.Router();
 const {NodeVM} = require('vm2');
@@ -63,6 +68,10 @@ router.post("/resolver/", async (req, res) => {
 });
 
 // FUNCIONALIDAD: Comprobar si un usuario ha resuelto un reto
+router.get("/resuelto/:id", async (req, res) => {
+    const retos = req.user.retos.map(r => r.idReto);
+    return res.status(200).json(retos.includes(req.params.id));
+});
 
 // FUNCIONALIDAD: Obtener la lista de etiquetas (tags)
 router.get("/etiquetas/", async (req, res) => {
@@ -82,6 +91,27 @@ router.get("/etiquetas/", async (req, res) => {
     }
     });
 });
+
+// PERMISOS: Comprobar si se tienen permisos para editar cierto reto
+router.get("/tienePermisos/:id", async (req, res) => {
+    try {
+        const reto = await Reto.findOne({id: req.params.id});
+        const autorizado = req.user.rol.includes('organizador') || req.user.rol.includes('ojeador');
+        const resultado = 
+        req.user.rol.includes('admin')
+        ? true
+        : !!reto.organizador
+            ? reto.organizador === req.session.user.nombreUsuario 
+                ? true
+                : false
+            : false;
+            console.log(resultado);
+        return res.status(200).json(autorizado && resultado);
+    } catch (e) {
+        return res.status(500).json(false);
+    }
+})
+
 // PERSISTENCIA: Obtener la info de un reto
 router.get("/reto/:id", async (req, res) => {
     console.log(req.params.id);
@@ -155,7 +185,7 @@ router.post('/nuevo-reto', async (req, res) => {
     } catch (error) {
         return res.status(500).json({mensaje: "error", error});
     }
-})
+});
 // PERSISTENCIA: Actualizar un reto
 router.put('/actualizar/:id', async (req, res) => {
     try {
@@ -164,8 +194,7 @@ router.put('/actualizar/:id', async (req, res) => {
     } catch (error) {
         return res.status(500).json({mensaje: "error", error});
     }
-})
-
+});
 // PERSISTENCIA: Eliminar un reto
 router.delete('/eliminar/:id', async (req, res) => {
     try {
@@ -175,4 +204,5 @@ router.delete('/eliminar/:id', async (req, res) => {
         return res.status(500).json({mensaje: "error", error});
     }
 })
+
 module.exports = router;

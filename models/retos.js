@@ -16,6 +16,7 @@ const ChallengeSchema = new Schema({
     nombre: String,
     descripcion: String,
     dificultad: Number,
+    organizador: String,
     recompensa: Number,
     pruebas: [{
         id: Number,

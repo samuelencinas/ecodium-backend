@@ -1,3 +1,8 @@
+/**
+ * ECODIUM - TFG Samuel Encinas
+ * RUTAS DE LA API: Eventos (Concursos)
+ */
+
 const express = require("express");
 const router = express.Router();
 const Evento = require ('../models/eventos');
@@ -16,6 +21,36 @@ router.put('/nueva-candidatura/:id', async (req, res) => {
         return res.status(500).json({mensaje: "error"});
     }
 });
+
+// FUNCIONALIDAD: Comprobar si el usuario tiene el nivel mínimo del evento
+router.get("/tieneAcceso/:id", async (req, res) => {
+    try {
+        const evento = await Evento.findOne({id: req.params.id});
+        const autorizado = req.user.nivel >= evento.limite;
+        return res.status(200).json(autorizado);
+    } catch (e) {
+        return res.status(500).json(false);
+    }
+});
+
+// PERMISOS: Comprobar si se tienen permisos para editar cierto evento
+router.get("/tienePermisos/:id", async (req, res) => {
+    try {
+        const evento = await Evento.findOne({id: req.params.id});
+        const autorizado = req.user.rol.includes('organizador') || req.user.rol.includes('ojeador');
+        const resultado = 
+        req.user.rol.includes('admin')
+        ? true
+        : !!evento.organizador
+            ? evento.organizador === req.session.user.nombreUsuario 
+                ? true
+                : false
+            : false;
+        return res.status(200).json(autorizado && resultado);
+    } catch (e) {
+        return res.status(500).json(false);
+    }
+})
 
 // PERSISTENCIA: Obtener todos los retos
 router.get('/eventos/', function(req, res) {
@@ -48,17 +83,19 @@ router.post('/nuevo-evento', async (req, res) => {
     }
 });
 
-// PERSISTENCIA: Obtener la info de un reto
+
+// PERSISTENCIA: Obtener la info de un evento
 router.get("/evento/:id", async (req, res) => {
     try {
         const evento = await Evento.findOne({id: req.params.id});
+        const esSoloJugador = req.user.rol === ['player'];
         var candidaturas = [];
         // Devolvemos solo los datos públicos de las candidaturas
-        evento.candidaturas && evento.candidaturas.length > 0 
-            ? evento.candidaturas.forEach(candidatura => {
+        if (esSoloJugador && evento.candidaturas && evento.candidaturas.length > 0) {
+            evento.candidaturas.forEach(candidatura => {
                 candidaturas.push({titulo: candidatura.titulo, descripcion: candidatura.descripcion, repositorio: candidatura.repositorio});
             })
-            : [];
+        }
         res.status(200).json({
             estado: evento.estado,
             nombre: evento.nombre,
@@ -68,7 +105,7 @@ router.get("/evento/:id", async (req, res) => {
             premios: evento.premios,
             visible: evento.visible,
             fecha: evento.fecha,
-            candidaturas,
+            candidaturas: esSoloJugador ? candidaturas : evento.candidaturas,
             candidaturaGanadora: evento.candidaturaGanadora,
             etiqueta: evento.etiqueta
         });
@@ -91,7 +128,7 @@ router.put('/actualizar/:id', async (req, res) => {
 // PERSISTENCIA: Eliminar un evento
 router.delete('/eliminar/:id', async (req, res) => {
     try {
-        const eventoBorrado = await Reto.findOneAndDelete({"id": req.params.id});
+        const eventoBorrado = await Evento.findOneAndDelete({"id": req.params.id});
         res.status(200).json(retoBorrado);
     } catch (error) {
         return res.status(500).json({mensaje: "error", error});

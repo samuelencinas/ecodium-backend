@@ -39,7 +39,6 @@ app.use(express.urlencoded({extended: true}))
 app.use(express.json());
 app.use('/subidas', express.static('uploads'));
 
-
 // Si estamos en producción, sirves el contenido estático
 if(process.env.NODE_ENV === 'production'){
     app.use(express.static('client/dist'))
@@ -71,6 +70,8 @@ const logros = require("./routes/logros");
 app.use('/api/logros', logros);
 const eventos = require("./routes/eventos");
 app.use('/api/eventos', eventos);
+const talleres = require("./routes/talleres");
+app.use('/api/talleres', talleres);
 const herramientas = require("./routes/herramientas");
 app.use('/api/herramientas', herramientas);
 

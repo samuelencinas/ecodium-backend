@@ -1,6 +1,6 @@
 /**
  * ECODIUM - TFG Samuel Encinas
- * MODELO: Eventos
+ * MODELO DE LA API: Eventos
  */
 
  var mongoose = require('mongoose');

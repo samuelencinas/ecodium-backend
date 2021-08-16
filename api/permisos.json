@@ -1,0 +1,26 @@
+{
+    "estadisticasJ": "jugador",
+    "estadisticasO": {
+        "rank": "organizador",
+        "checkOwnership": true
+    },
+    "movimientos": "jugador",
+    "novedades": "all",
+    "resolver": "jugador",
+    "candidaturasL": "jugador",
+    "candidaturasU": ["organizador", "ojeador"],
+    "editarRetos": {
+        "rank": "organizador",
+        "checkOwnership": true
+    },
+    "inscribirse": "jugador",
+        "editarEventos": {
+        "rank": "organizador",
+        "checkOwnership": true
+    },
+    "verTemario": ["jugador", "ojeador"],
+        "editarTalleres": {
+        "rank": "organizador",
+        "checkOwnership": true
+    }
+}

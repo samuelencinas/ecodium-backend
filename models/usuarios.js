@@ -47,16 +47,13 @@ const UserSchema = new Schema({
         idReto: Number,
         fecha: Date,
     }],
-    cursos: [{
-        idCurso: Number,
+    talleres: [{
+        idTaller: Number,
         fecha: Date,
         aprobado: Boolean,
     }],
     fotoPerfil: String,
     rank: String,
-    categoria: Number,
-    pasesEvento: Number,
-    pasesTaller: Number,
     third_party_link: ThirdPartySchema
 });
 

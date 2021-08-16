@@ -4,6 +4,7 @@ const passport = require("passport");
 const mongoose = require('mongoose');
 const Archivo = require('../models/archivos');
 const Diapositiva = require('../models/diapositiva');
+
 // Multer - Middleware para el manejo de archivos subidos por el usuario
 const multer = require('multer');
 const path = require('path');
@@ -28,7 +29,6 @@ var upload = multer({
 });
 
 // FUNCIONALIDAD: Subir imágenes (ya sea foto de perfil, etc..)
-
 router.post("/subirArchivo", upload.single('file'), async (req, res, next) => {
   const file = req.file;
   if (!file || !file.filename) {
@@ -54,7 +54,6 @@ router.get("/siguienteNivel", (req, res, next) => {
     }
 });
 
-
 // FUNCIONALIDAD: Obtener las diapositivas
 router.get("/diapositivas", (req, res, next) => {
   Diapositiva.find({}, function(err, diapositivas) {
@@ -65,5 +64,9 @@ router.get("/diapositivas", (req, res, next) => {
     }
   });
 });
+
+/**
+ * COMUNIDAD
+ */
 
 module.exports = router;

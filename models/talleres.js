@@ -27,5 +27,5 @@ const WorkshopSchema = new Schema({
     alumnos: [String],
     etiquetas: [String],
 });
-WorkshopSchema.plugin(AutoIncrement, {id:'order_seq',inc_field: 'id'});
-module.exports = Taller = mongoose.model('retos', WorkshopSchema);
+WorkshopSchema.plugin(AutoIncrement, {id:'order_seq_3',inc_field: 'id'});
+module.exports = Taller = mongoose.model('talleres', WorkshopSchema);

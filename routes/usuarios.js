@@ -2,23 +2,26 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 
-// GOOGLE
+// FUNCIONALIDAD: Iniciar sesión con Google
 router.get("/google", passport.authenticate("google", {
     scope: ["profile", "email"]
   }), 
 );
 
+// Callback 
 router.get("/google/redirect", passport.authenticate("google"), (req, res) => {
     const user = req.user;
     return res.status(200).send('<script>window.opener.location="http://localhost:8080"; self.close();</script>');
     
 });
-// GITHUB
+
+// FUNCIONALIDAD: Iniciar sesión con GitHub
 router.get("/github", passport.authenticate("github", {
     scope: ["profile", "email"]
 }),
 );
 
+// Callback
 router.get("/github/redirect", passport.authenticate("github"), (req, res) => {
     const user = req.user;
     return res.status(200).send('<script>window.opener.location="http://localhost:8080"; self.close();</script>');
@@ -29,7 +32,8 @@ router.get("/metamask",   passport.authenticate('metamask', { failureRedirect: '
   function(req, res) {
     res.redirect('/');
   });
-// REGISTRO - LOCAL
+
+// FUNCIONALIDAD: Registro local
 router.post("/register", (req, res, next) => {
 
     passport.authenticate("registro_local", function(err, user, info) {
@@ -45,7 +49,7 @@ router.post("/register", (req, res, next) => {
     })(req, res, next);
 });
 
-// INICIO DE SESIÓN - LOCAL
+// FUNCIONALIDAD: Inicio de sesión local
 router.post("/login", (req, res, next) => {
     passport.authenticate("login_local", function(err, user, info) {
         if (err || !user) {
@@ -59,7 +63,8 @@ router.post("/login", (req, res, next) => {
         }});
     })(req, res, next);
 });
-// CIERRE DE SESIÓN - LOCAL
+
+// FUNCIONALIDAD: Cerrar sesión
 router.get('/cerrarsesion', function(req, res){
   req.logout();
   req.session.destroy(function (err) {
@@ -67,13 +72,14 @@ router.get('/cerrarsesion', function(req, res){
     });
 });
 
-    function sumarDeArray(array, propiedad) {
-      return array.reduce(function (r, a) {
-        return r + a[propiedad];
-      }, 0);
-    }
+// FUNCIÓN AUXILIAR: Sumar propiedad de array
+function sumarDeArray(array, propiedad) {
+    return array.reduce(function (r, a) {
+    return r + a[propiedad];
+    }, 0);
+}
 
-
+// FUNCIÓN AUXILIAR: Comprobar nivel
 function comprobarNivel(usuario){
   const data = require('../json/leveling.json');
   const xp = sumarDeArray(usuario.movimientosExp, "cantidad");
@@ -96,15 +102,22 @@ function comprobarNivel(usuario){
   return nv;
 }
 
-// COMPROBAR SI LA SESIÓN SE HA INICIADO
+// FUNCIÓN AUXILIAR: Comprobar rango
+function comprobarRango(nivel){
+    const data = require('../json/leveling.json');
+    const rango = data[Number(nivel-1)].rango;
+    return rango;
+}
+// FUNCIONALIDAD: Comprobar si el usuario ha iniciado sesión y actualizar los datos de inicio de sesión
 router.get("/user", (req, res, next) => {
     console.log(req.isAuthenticated());
     if (req.isAuthenticated()){
-        // Comprobamos el nivel del usuario
-        const nivel = {"nivel": comprobarNivel(req.user)}
+        const nivel = comprobarNivel(req.user);
+        // Comprobamos el nivel y rango del usuario
+        const datosNivel = {"nivel": nivel, "rank": comprobarRango(nivel)}
         Usuario.findOneAndUpdate(
             {"_id": req.user.id},
-            {"$set": nivel},
+            {"$set": datosNivel},
             {new: true}
         ).then(response => {
         return res.status(200).json({estado: "ok", usuario: response});
@@ -115,7 +128,7 @@ router.get("/user", (req, res, next) => {
     }
 });
 
-// ACTUALIZAR UN USUARIO
+// FUNCIONALIDAD: Actualizar un usuario 
 router.put("/actualizar/:id", async (req, res) => {
     const _id = req.params.id;
     const body = req.body;
@@ -132,7 +145,7 @@ router.put("/actualizar/:id", async (req, res) => {
     }
 });
 
-// Obtener todos los usuarios
+// FUNCIONALIDAD: Obtener todos los usuarios
 router.get("/usuarios", async (req, res) => {
     try {
         const usuarioDb = await Usuario.find();
@@ -144,13 +157,36 @@ router.get("/usuarios", async (req, res) => {
         })
     }
 });
-
-// Obtener un usuario por ID
-router.get("/info/:id", async (req, res) => {
+// FUNCIONALIDAD: Comprobar si existe el nombre de usuario
+router.get("/existe/:nombre", async (req, res) => {
+    const nick = req.params.nombre;
     try {
-        const usuarioDb = await Usuario.find
-    } catch {
-        
+        const existe = await Usuario.find({"nombreUsuario": nick}).count() > 0;
+        console.log(existe);
+        return res.status(200).json(existe);
+    } catch (e){
+        return res.status(500).json(e);
     }
 })
+// FUNCIONALIDAD: Obtener perfil público por nombre de usuario
+router.get("/perfil/:nombre", async (req, res) => {
+    const nick = req.params.nombre;
+    try {
+        const usuario = await Usuario.findOne({"nombreUsuario" : nick});
+        const perfil = {
+            nombreUsuario: usuario.nombreUsuario,
+            nivel: usuario.nivel,
+            rango: usuario.rank,
+            xp: sumarDeArray(usuario.movimientosExp, "cantidad"),
+            retos: usuario.retos.length,
+            logros: usuario.logros.length,
+            talleres: usuario.talleres.length,
+            fotoPerfil: usuario.fotoPerfil
+        }
+        return res.status(200).json(perfil);
+    } catch (e) {
+        return res.status(500).json(e);
+    }
+})
+
 module.exports = router;
