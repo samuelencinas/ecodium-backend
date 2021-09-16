@@ -11,7 +11,7 @@ router.get("/google", passport.authenticate("google", {
 // Callback 
 router.get("/google/redirect", passport.authenticate("google"), (req, res) => {
     const user = req.user;
-    return res.status(200).send('<script>window.opener.location="https://ecodium.dev"; self.close();</script>');
+    return res.status(200).send('<script>window.opener.location="https://www.ecodium.dev"; self.close();</script>');
     
 });
 
