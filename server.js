@@ -50,10 +50,8 @@ app.use(
       secret: "very secret this is",
       resave: true,
       saveUninitialized: true,
-      sameSite: 'None',
-
       store: MongoStore.create({ mongoUrl: secretMongoDB}),
-      cookie: { secure: false } // Set to false
+      cookie: { secure: false,       sameSite: 'None', } // Set to false
   })
 );
 app.use(passport.initialize());
