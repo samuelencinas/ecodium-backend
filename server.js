@@ -34,7 +34,7 @@ const secretMongoDB = process.env.MONGODB_URI;
 
 // Middlewares
 app.use(bodyParser.json());
-app.use(cors({credentials: true, origin: 'http://localhost:8080'}))
+app.use(cors({credentials: true, origin: 'https://ecodium.dev'}))
 app.use(express.urlencoded({extended: true}))
 app.use(express.json());
 app.use('/subidas', express.static('uploads'));
