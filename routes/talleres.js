@@ -8,30 +8,73 @@ const Taller = require ('../models/talleres');
 
 // PERSISTENCIA: Obtener todos los talleres
 router.get('/talleres/', function (req, res) {
-  Taller.find({}, function (err, talleres) {
-    var talleresMap = [];
-    const autorizado = req.user.rol.includes('organizador') || req.user.rol.includes('ojeador');
+      var talleresMap = [];
 
+  Taller.find({}, function (err, talleres) {
     talleres.forEach(taller => {
-      var contenidos = [];
-      taller.contenidos.forEach(contenido => {
-        autorizado
-          ?
-          contenidos.push(contenido) :
-          contenidos.push({
-            identificador: contenido.identificador
-          });
+      talleresMap.push({id: taller.id, plazas: taller.plazas, nombre: taller.nombre, descripcion: taller.descripcion, nivel: taller.nivel, precio: taller.precio, dificultad: taller.dificultad, organizador: taller.organizador, etiquetas: taller.etiquetas})
       });
-      const t = {
-        ...taller,
-        contenidos,
-      }
-      talleresMap.push(t);
+          console.log(talleresMap);
+
+              res.status(200).json(talleresMap);
     });
-    res.status(200).json(talleresMap);
   });
+
+// FUNCIONALIDAD: Obtener todos los talleres recientes (creados hace menos de 7 días)
+router.get('/talleresRecientes/', function (req, res) {
+      var talleresMap = [];
+
+  Taller.find({}, function (err, talleres) {
+    talleres.forEach(taller => {
+      const limite = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const fecha = new Date(taller.fecha).setHours(0,0,0,0);
+         if (fecha <= limite){
+      talleresMap.push({id: taller.id, plazas: taller.plazas, nombre: taller.nombre, descripcion: taller.descripcion, nivel: taller.nivel, precio: taller.precio, dificultad: taller.dificultad, organizador: taller.organizador, fecha: taller.fecha, etiquetas: taller.etiquetas})
+  }});
+              res.status(200).json(talleresMap);
+    });
+    
 });
 
+
+// FUNCIONALIDAD: Obtener todos los talleres propios (creados por el usuario)
+router.get('/talleresPropios/', function (req, res) {
+      var talleresMap = [];
+
+  Taller.find({}, function (err, talleres) {
+    talleres.forEach(taller => {
+         if (req.user.nombreUsuario === taller.organizador){
+      talleresMap.push({id: taller.id, plazas: taller.plazas, nombre: taller.nombre, descripcion: taller.descripcion, nivel: taller.nivel, precio: taller.precio, dificultad: taller.dificultad, organizador: taller.organizador, fecha: taller.fecha, etiquetas: taller.etiquetas})
+  }});
+              res.status(200).json(talleresMap);
+    });
+    
+});
+
+// PERSISTENCIA: Obtener la info de un taller
+router.get("/taller/:id", async (req, res) => {
+    try {
+        const taller = await Taller.findOne({id: req.params.id});
+        // Validación de permisos, lado servidor
+        const esOrganizador = !!req.user ? req.user.rol.includes('organizador') : false;
+        const talleresUsuario = !!req.user ? req.user.talleres : [];
+        const tienePermisos = esOrganizador
+          ? true
+          : talleresUsuario.length === 0
+        ? false
+        : talleresUsuario.filter(t => t.idTaller === taller.id).length !== 0
+          ? true
+          : false;
+        console.log(tienePermisos);
+        if (tienePermisos){
+          return res.status(200).json(taller);
+        } else {
+          return res.status(403).json({mensaje: "permiso denegado"});
+        }
+    } catch (e) {
+        return res.status(500).json({mensaje: "error", e});
+    }
+});
 // PERSISTENCIA: DAR DE ALTA UN TALLER
 router.post('/nuevo-taller', async (req, res) => {
   const body = req.body;
@@ -56,10 +99,8 @@ router.get("/tienePermisos/:id", async (req, res) => {
     const resultado =
       req.user.rol.includes('admin') ?
       true :
-      !!taller.organizador ?
-      taller.organizador === req.session.user.nombreUsuario ?
+      taller.organizador === req.user.nombreUsuario ?
       true :
-      false :
       false;
     return res.status(200).json(autorizado && resultado);
   } catch (e) {
@@ -101,6 +142,44 @@ router.get("/taller/:id", async (req, res) => {
   }
 });
 
+// FUNCIONALIDAD: Añadir un contenido a un taller
+router.put('/nuevoContenido/:id', async (req, res) => {
+  try {
+    const tallerActualizado = await Taller.findOneAndUpdate({
+      "id": req.params.id
+    }, {
+      "$push": {
+        'contenidos': req.body.contenido
+      }
+    }, {
+      new: true
+    });
+    res.status(200).json(tallerActualizado);
+  } catch (error) {
+    return res.status(500).json({mensaje: 'error', error});
+  }
+});
+
+// FUNCIONALIDAD: Añadir un alumno a un taller
+router.put('/matricular/:id', async (req, res) => {
+  try {
+    const tallerActualizado = await Taller.findOneAndUpdate({
+      "id": req.params.id
+    }, {
+      "$push": {
+        'alumnos': req.body.alumno
+      },
+      "$inc": {
+        plazas: -1
+      }
+    }, {
+      new: true
+    });
+    res.status(200).json(tallerActualizado);
+  } catch (error) {
+    return res.status(500).json({mensaje: 'error', error});
+  }
+});
 
 // PERSISTENCIA: Actualizar un taller
 router.put('/actualizar/:id', async (req, res) => {
@@ -135,5 +214,14 @@ router.delete('/eliminar/:id', async (req, res) => {
     });
   }
 })
+
+// FUNCIONALIDAD: Obtener lista de Talleres creados por mí
+/** router.get('/propios/:organizador', async (req, res) => {
+  try {
+    const taller = await Taller.find({
+      id: req.params.id
+    });
+  }
+})**/
 
 module.exports = router;

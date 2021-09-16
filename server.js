@@ -57,6 +57,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+
 const auth = require("./routes/usuarios");
 app.use('/api/auth', auth);
 const retos = require("./routes/retos");

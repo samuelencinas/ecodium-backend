@@ -38,8 +38,10 @@ router.post("/subirArchivo", upload.single('file'), async (req, res, next) => {
   }
 });
 
+
 // FUNCIONALIDAD: Obtener siguiente nivel del usuario 
 router.get("/siguienteNivel", (req, res, next) => {
+
     const usuario = req.isAuthenticated() ? req.user : undefined;
       if (!!usuario){
       const siguienteNivel = Number(Number(usuario.nivel)+1);

@@ -10,14 +10,19 @@ const Evento = require ('../models/eventos');
 // FUNCIONALIDAD: PRESENTAR CANDIDATURA A EVENTO
 router.put('/nueva-candidatura/:id', async (req, res) => {
     const body = req.body;
-    if (!!req.body.titulo && !!req.body.autor && !!req.body.descripcion && !!req.body.repositorio){
+    console.log("PRUEBA");
+    if (!!req.body.candidatura){
         try {
-            const eventoActualizado = await Evento.findOneAndUpdate({"id": req.params.id}, {"$push": {"candidaturas" : {"titulo" : req.body.titulo, "autor": req.body.autor, "descripcion": req.body.descripcion, "repositorio": req.body.repositorio}}});
+            console.log("A");
+            const eventoActualizado = await Evento.findOneAndUpdate({"id": req.params.id}, {"$push": {"candidaturas" : req.body.candidatura}});
+            console.log("B");
             return res.status(200).json(eventoActualizado);
         } catch (error) {
+            console.log("E1");
             return res.status(500).json({mensaje: "error"}, error);
         }
     } else {
+        console.log("E2");
         return res.status(500).json({mensaje: "error"});
     }
 });
@@ -58,9 +63,10 @@ router.get('/eventos/', function(req, res) {
         var eventosMap = [];
 
         eventos.forEach(evento => {
+            console.log(evento);
             var candidaturas = [];
             evento.candidaturas.forEach(candidatura => {
-                pruebas.push({titulo: candidatura.titulo, descripcion: candidatura.descripcion, autor: candidatura.descripcion});
+                candidaturas.push({titulo: candidatura.titulo, descripcion: candidatura.descripcion, autor: candidatura.descripcion});
             });
             const e = {
                 ...evento,
@@ -72,6 +78,49 @@ router.get('/eventos/', function(req, res) {
     });
 });
 
+// FUNCIONALIDAD: Obtener todos los eventos activos
+router.get('/eventosActivos', function(req, res) {
+     Evento.find({}, function(err, eventos){
+        var eventosMap = [];
+
+        eventos.forEach(evento => {
+            const hoy = Date.now();
+            const inicio = new Date(evento.fechaInicio).setHours(0,0,0,0);
+            const fin = new Date(evento.fechaFin).setHours(0,0,0,0);
+            console.log(hoy);
+            console.log(inicio);
+            console.log(fin);
+            if (!hoy <= fin && hoy >= inicio) {
+                var candidaturas = [];
+                evento.candidaturas.forEach(candidatura => {
+                    candidaturas.push({titulo: candidatura.titulo, descripcion: candidatura.descripcion, autor: candidatura.descripcion});
+                });
+                evento.candidaturas = candidaturas;
+                eventosMap.push(evento);
+            }
+        });
+        res.status(200).json(eventosMap);
+    });   
+})
+
+// FUNCIONALIDAD: Obtener todos los eventos propios
+router.get('/eventosPropios', function(req, res) {
+     Evento.find({}, function(err, eventos){
+        var eventosMap = [];
+
+        eventos.forEach(evento => {
+            if (evento.organizador === req.user.nombreUsuario) {
+                var candidaturas = [];
+                evento.candidaturas.forEach(candidatura => {
+                    candidaturas.push({titulo: candidatura.titulo, descripcion: candidatura.descripcion, autor: candidatura.descripcion});
+                });
+                evento.candidaturas = candidaturas;
+                eventosMap.push(evento);
+            }
+        });
+        res.status(200).json(eventosMap);
+    });   
+})
 // PERSISTENCIA: DAR DE ALTA UN EVENTO
 router.post('/nuevo-evento', async (req, res) => {
     const body = req.body;
@@ -88,8 +137,10 @@ router.post('/nuevo-evento', async (req, res) => {
 router.get("/evento/:id", async (req, res) => {
     try {
         const evento = await Evento.findOne({id: req.params.id});
+        console.log("B" + evento);
         const esSoloJugador = req.user.rol === ['player'];
         var candidaturas = [];
+        console.log("E" + esSoloJugador);
         // Devolvemos solo los datos públicos de las candidaturas
         if (esSoloJugador && evento.candidaturas && evento.candidaturas.length > 0) {
             evento.candidaturas.forEach(candidatura => {
@@ -106,7 +157,7 @@ router.get("/evento/:id", async (req, res) => {
             visible: evento.visible,
             fecha: evento.fecha,
             candidaturas: esSoloJugador ? candidaturas : evento.candidaturas,
-            candidaturaGanadora: evento.candidaturaGanadora,
+            candidaturasGanadoras: evento.candidaturasGanadoras,
             etiqueta: evento.etiqueta
         });
     } catch (e) {

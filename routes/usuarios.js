@@ -27,12 +27,6 @@ router.get("/github/redirect", passport.authenticate("github"), (req, res) => {
     return res.status(200).send('<script>window.opener.location="http://localhost:8080"; self.close();</script>');
 });
 
-// ACCESO DESCENTRALIZADO
-router.get("/metamask",   passport.authenticate('metamask', { failureRedirect: '/login' }),
-  function(req, res) {
-    res.redirect('/');
-  });
-
 // FUNCIONALIDAD: Registro local
 router.post("/register", (req, res, next) => {
 
@@ -108,16 +102,35 @@ function comprobarRango(nivel){
     const rango = data[Number(nivel-1)].rango;
     return rango;
 }
+
+// FUNCIONALIDAD: Descargar las notificaciones enviadas mientras el usuario estaba offline
+router.get("/notificaciones", (req, res, next) => {
+    if (req.isAuthenticated()){
+       const notifications = req.user.notificacionesPendientes;
+       const datosSet = {"notificacionesPendientes": []};
+       Usuario.findOneAndUpdate(
+           {"_id": req.user.id},
+           {"$set": datosSet},
+           {new: true}
+       ).then(response => {
+           return res.status(200).json({estado: "ok", notificaciones: notifications});
+       })
+    } else {
+                   return res.status(500).json({estado: 'error', error: 'Sesión no iniciada'})
+
+    }
+});
 // FUNCIONALIDAD: Comprobar si el usuario ha iniciado sesión y actualizar los datos de inicio de sesión
 router.get("/user", (req, res, next) => {
-    console.log(req.isAuthenticated());
     if (req.isAuthenticated()){
         const nivel = comprobarNivel(req.user);
+        const notifications = req.user.notificacionesPendientes;
+        console.log(req.user);
         // Comprobamos el nivel y rango del usuario
-        const datosNivel = {"nivel": nivel, "rank": comprobarRango(nivel)}
+        const datosSet = {"nivel": nivel, "rank": comprobarRango(nivel)}
         Usuario.findOneAndUpdate(
             {"_id": req.user.id},
-            {"$set": datosNivel},
+            {"$set": datosSet},
             {new: true}
         ).then(response => {
         return res.status(200).json({estado: "ok", usuario: response});
@@ -144,6 +157,8 @@ router.put("/actualizar/:id", async (req, res) => {
 
     }
 });
+
+
 
 // FUNCIONALIDAD: Obtener todos los usuarios
 router.get("/usuarios", async (req, res) => {
@@ -184,6 +199,37 @@ router.get("/perfil/:nombre", async (req, res) => {
             fotoPerfil: usuario.fotoPerfil
         }
         return res.status(200).json(perfil);
+    } catch (e) {
+        return res.status(500).json(e);
+    }
+})
+
+
+// FUNCIONALIDAD: Añadir usuario a favoritos (Solo Ojeadores)
+router.put("/nuevoFavorito/:id", async (req, res) => {
+    const _id = req.params.id;
+
+      try {
+    const usuarioActualizado = await Usuario.findOneAndUpdate(            {"_id": _id}, {
+      "$push": {
+        'favoritos': req.body.favorito
+      }
+    }, {
+      new: true
+    });
+    res.status(200).json(usuarioActualizado);
+  } catch (error) {
+    return res.status(500).json({mensaje: 'error', error});
+  }
+});
+
+// FUNCIONALIDAD: Obtener email por nombre de usuario
+router.get("/email/:nombre", async (req, res) => {
+    const nick = req.params.nombre;
+    try {
+        const usuario = await Usuario.findOne({"nombreUsuario" : nick});
+        const email = usuario.email;
+        return res.status(200).json(email);
     } catch (e) {
         return res.status(500).json(e);
     }

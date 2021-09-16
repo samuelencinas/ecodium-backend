@@ -111,22 +111,28 @@ passport.use('github', new GitHubStrategy({
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
     callbackURL: "http://localhost:3000/api/auth/github/redirect"
 }, (accessToken, refreshToken, githubUser, done) => {
-      // passport callback function
-      //check if user already exists in our db with the given profile ID
-      Usuario.findOne({"third_party_link.github": githubUser.id}).then((usuarioActual)=>{
+    Usuario.findOne({"third_party_link.github.id": githubUser.id}).then(async (usuarioActual)=>{
         if(usuarioActual){
-          //if we already have a record with the given profile ID
-          done(null, usuarioActual);
-        } else{
-            const thirdParty = {github: githubUser.id};
-            const nuevoUsuario = new Usuario({ email: githubUser.email, nombreUsuario: githubUser.login, nivel: 1, rol: "player", exp: 0, logros: [], rank: "Sin rango", third_party_link: thirdParty });
-             //if not, create a new user 
-            nuevoUsuario.save().then((usuarioCreado) =>{
-              done(null, usuarioCreado);
-            });
-         } 
-      })
+            console.log("uA" + usuarioActual);
+            //if we already have a record with the given profile ID
+            done(null, usuarioActual);
+        } else {
+            try {
+            const actualizarUsuario = await Usuario.findOneAndUpdate(
+            {"email": githubUser._json.email},
+            {
+                "$set" : {"third_party_link.github.id": githubUser.id, "third_party_link.github.token": accessToken},
+                "$setOnInsert": { email: githubUser._json.email, nombreUsuario: githubUser._json.login, nivel: 17, rol: "player", exp: 0, logros: [], rank: "Sin rango"}
+            },
+            {new: true, upsert: true},
+        );
+            } catch (error){
+                console.log(error);
+            }
+            
+        } 
     })
+})
 );
 
 

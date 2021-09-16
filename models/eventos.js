@@ -12,10 +12,11 @@ const ParticipationSchema = new Schema({
     autor: String,
     descripcion: String,
     repositorio: String,
-    archivos: [String],
+    archivo: String,
 });
 
 const EventSchema = new Schema({
+    // Atributos generales de EVENTO
     id: {
         type: Number,
         unique: true
@@ -34,7 +35,7 @@ const EventSchema = new Schema({
     fechaFin: Date,
     organizador: String,
     candidaturas: [ParticipationSchema],
-    candidaturaGanadora: ParticipationSchema,
+    candidaturasGanadoras: [String],
     etiquetas: [String],
 });
 
