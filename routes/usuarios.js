@@ -11,7 +11,7 @@ router.get("/google", passport.authenticate("google", {
 // Callback 
 router.get("/google/redirect", passport.authenticate("google"), (req, res) => {
     const user = req.user;
-    return res.status(200);
+    return res.status(200).send('<script>window.opener.location="https://localhost:8080"; self.close();</script>');
     
 });
 
@@ -24,7 +24,7 @@ router.get("/github", passport.authenticate("github", {
 // Callback
 router.get("/github/redirect", passport.authenticate("github"), (req, res) => {
     const user = req.user;
-    return res.status(200).send('<script>window.opener.location="https://api.ecodium.dev"; self.close();</script>');
+    return res.status(200).send('<script>window.opener.location="https://localhost:8080"; self.close();</script>');
 });
 
 // FUNCIONALIDAD: Registro local
