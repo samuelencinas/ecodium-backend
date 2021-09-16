@@ -85,7 +85,7 @@ passport.use('login_local',
 passport.use('google', new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/api/auth/google/redirect"
+    callbackURL: "https://api.ecodium.dev/api/auth/google/redirect"
   }, (accessToken, refreshToken, googleUser, done) => {
       // passport callback function
       //check if user already exists in our db with the given profile ID
@@ -109,7 +109,7 @@ passport.use('google', new GoogleStrategy({
 passport.use('github', new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/api/auth/github/redirect"
+    callbackURL: "http://api.ecodium.dev/api/auth/github/redirect"
 }, (accessToken, refreshToken, githubUser, done) => {
     Usuario.findOne({"third_party_link.github.id": githubUser.id}).then(async (usuarioActual)=>{
         if(usuarioActual){
