@@ -44,7 +44,7 @@ app.use('/subidas', express.static('uploads'));
 mongoose.connect(secretMongoDB, {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false})
 .then(() => console.log("Conectado a la base de datos"))
 .catch(err => console.log('Something went wrong' + err))
-
+app.set('trust proxy', 1)
 // Configuración de Express Session
 app.use(
   session({
