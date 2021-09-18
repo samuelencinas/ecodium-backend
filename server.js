@@ -1,5 +1,5 @@
 /**
- * ECODIUM v1 - Backend
+ * ECODIUM - Servidor de Backend
  */
 
 // Variables de middleware y servicios usados 
@@ -24,18 +24,19 @@ const cors = require("cors");
 const dotenv = require('dotenv');
 dotenv.config(); 
 
-// Validación de datos
+// Manejo de secretos y datos sensibles
+const secretMongoDB = process.env.MONGODB_URI;
+
+// ObjectID - Validación de datos
 const Joi = require('@hapi/joi'); 
 Joi.objectId = require('joi-objectid')(Joi); 
 
+// Otros middlewares menores
+app.use(bodyParser.json()); // JSON
+app.use(cors({credentials: true, origin: 'https://www.ecodium.dev'})) // CORS para los endpoints
 
-// Secretos
-const secretMongoDB = process.env.MONGODB_URI;
-
-// Middlewares
-app.use(bodyParser.json());
-app.use(cors({credentials: true, origin: 'http://localhost:8080'}))
-app.use(express.urlencoded({extended: true}))
+// Configuración de Express
+app.use(express.urlencoded({extended: true})) 
 app.use(express.json());
 app.use('/subidas', express.static('uploads'));
 
@@ -44,20 +45,22 @@ mongoose.connect(secretMongoDB, {useNewUrlParser: true, useUnifiedTopology: true
 .then(() => console.log("Conectado a la base de datos"))
 .catch(err => console.log('Something went wrong' + err))
 
-// Express Session
+// Configuración de Express Session
 app.use(
   session({
-      secret: "very secret this is",
+      secret: "secretoDeLaCookie",
       resave: true,
       saveUninitialized: true,
       store: MongoStore.create({ mongoUrl: secretMongoDB}),
-      cookie: { secure: false, } // Set to false
+      cookie: { secure: true, sameSite:'none' } 
   })
 );
+
+// Inicialización de PassportJS
 app.use(passport.initialize());
 app.use(passport.session());
 
-
+// Carga de las rutas y definición de los paths de la API
 const auth = require("./routes/usuarios");
 app.use('/api/auth', auth);
 const retos = require("./routes/retos");
@@ -71,6 +74,7 @@ app.use('/api/talleres', talleres);
 const herramientas = require("./routes/herramientas");
 app.use('/api/herramientas', herramientas);
 
+// Configuración de ejecución de la aplicación
 app.set('puerto', process.env.PORT || 3000);
 app.listen(app.get('puerto'), err => {
   if(err) throw err;
