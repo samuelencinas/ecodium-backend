@@ -34,7 +34,7 @@ const secretMongoDB = process.env.MONGODB_URI;
 
 // Middlewares
 app.use(bodyParser.json());
-app.use(cors({credentials: true, origin: 'https://www.ecodium.dev'}))
+app.use(cors({credentials: true, origin: 'http://localhost:8080'}))
 app.use(express.urlencoded({extended: true}))
 app.use(express.json());
 app.use('/subidas', express.static('uploads'));
@@ -51,7 +51,7 @@ app.use(
       resave: true,
       saveUninitialized: true,
       store: MongoStore.create({ mongoUrl: secretMongoDB}),
-      cookie: { secure: true, sameSite: 'Strict', } // Set to false
+      cookie: { secure: false, } // Set to false
   })
 );
 app.use(passport.initialize());
