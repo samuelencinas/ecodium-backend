@@ -33,7 +33,7 @@ Joi.objectId = require('joi-objectid')(Joi);
 
 // Otros middlewares menores
 app.use(bodyParser.json()); // JSON
-app.use(cors({credentials: true, origin: 'https://api.ecodium.dev'})) // CORS para los endpoints
+app.use(cors({credentials: true, origin: 'https://www.ecodium.dev'})) // CORS para los endpoints
 
 // Configuración de Express
 app.use(express.urlencoded({extended: true})) 
