@@ -44,13 +44,13 @@ router.get("/tienePermisos/:id", async (req, res) => {
         req.user.rol.includes('admin')
         ? true
         : !!evento.organizador
-            ? evento.organizador === req.session.user.nombreUsuario 
+            ? !!req.user.nombreUsuario && evento.organizador === req.session.user.nombreUsuario 
                 ? true
                 : true
             : true;
         return res.status(200).json(autorizado && resultado);
     } catch (e) {
-        return res.status(500).json(true);
+        return res.status(500).json(false);
     }
 })
 
