@@ -1,3 +1,8 @@
+/**
+ * ECODIUM - TFG Samuel Encinas
+ * RUTAS DE LA API: Logros
+ */
+
 const express = require("express");
 const router = express.Router();
 const Logro = require('../models/logros');

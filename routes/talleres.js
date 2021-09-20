@@ -14,7 +14,6 @@ router.get('/talleres/', function (req, res) {
     talleres.forEach(taller => {
       talleresMap.push({id: taller.id, plazas: taller.plazas, nombre: taller.nombre, descripcion: taller.descripcion, nivel: taller.nivel, precio: taller.precio, dificultad: taller.dificultad, organizador: taller.organizador, etiquetas: taller.etiquetas})
       });
-          console.log(talleresMap);
 
               res.status(200).json(talleresMap);
     });
@@ -65,7 +64,6 @@ router.get("/taller/:id", async (req, res) => {
         : talleresUsuario.filter(t => t.idTaller === taller.id).length !== 0
           ? true
           : false;
-        console.log(tienePermisos);
         if (tienePermisos){
           return res.status(200).json(taller);
         } else {

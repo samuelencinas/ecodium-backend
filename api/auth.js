@@ -1,3 +1,7 @@
+/**
+ * ECodium - TFG Samuel Encinas
+ * Fichero de configuración del manejo de usuarios
+ */
 const bcrypt = require("bcryptjs");
 const Usuario = require("../models/usuarios");
 const passport = require("passport");
@@ -56,15 +60,12 @@ passport.use('registro_local',
 // INICIO DE SESIÓN / Estrategia Local (1.2)
 passport.use('login_local',
     new LocalStrategy({ usernameField: "email" }, (email, password, done) => {
-        // Match User
         Usuario.findOne({ email: email })
             .then(user => {
                 // REGISTRO DE USUARIOS
                     if (!user) {
                         return done(null, false, { error: "El usuario no existe" })
-                    // Return other user
                 } else {
-                    // Match password
                     bcrypt.compare(password, user.password, (err, isMatch) => {
                         if (err) throw err;
                         if (isMatch) {
@@ -87,19 +88,22 @@ passport.use('google', new GoogleStrategy({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: "https://api.ecodium.dev/api/auth/google/redirect"
   }, (accessToken, refreshToken, googleUser, done) => {
-      // passport callback function
-      //check if user already exists in our db with the given profile ID
-      Usuario.findOne({"third_party_link.google": googleUser.id}).then((usuarioActual)=>{
+      Usuario.findOne({"third_party_link.google": googleUser.id}).then(async (usuarioActual)=>{
         if(usuarioActual){
-          //if we already have a record with the given profile ID
           done(null, usuarioActual);
         } else{
-            const thirdParty = {google: googleUser.id};
-            const nuevoUsuario = new Usuario({ email: googleUser.email, nombreUsuario: googleUser.name.givenName, nivel: 1, rol: "player", exp: 0, logros: [], rank: "Sin rango", third_party_link: thirdParty });
-             //if not, create a new user 
-            nuevoUsuario.save().then((usuarioCreado) =>{
-              done(null, usuarioCreado);
-            });
+            try {
+                const actualizarUsuario = await Usuario.findOneAndUpdate(
+                    {"email": googleUser.email},
+                    {
+                        "$set": {"thirdParty.google": googleUser.id},
+                        "$setOnInsert": { email: googleUser.email, nombreUsuario: googleUser.name.givenName, nivel: 1, rol: "player", exp: 0, logros: [], rank: "Sin rango"}
+                    },
+                    {new: true, upsert: true}
+                );
+            } catch (error) {
+                console.warn(error);
+            }
          } 
       })
     })
@@ -113,8 +117,6 @@ passport.use('github', new GitHubStrategy({
 }, (accessToken, refreshToken, githubUser, done) => {
     Usuario.findOne({"third_party_link.github.id": githubUser.id}).then(async (usuarioActual)=>{
         if(usuarioActual){
-            console.log("uA" + usuarioActual);
-            //if we already have a record with the given profile ID
             done(null, usuarioActual);
         } else {
             try {
@@ -127,7 +129,7 @@ passport.use('github', new GitHubStrategy({
             {new: true, upsert: true},
         );
             } catch (error){
-                console.log(error);
+                console.warn(error);
             }
             
         } 

@@ -1,3 +1,8 @@
+/**
+ * ECODIUM - TFG Samuel Encinas
+ * RUTAS DE LA API: Herramientas
+ */
+
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");

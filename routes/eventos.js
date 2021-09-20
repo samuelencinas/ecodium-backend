@@ -1,6 +1,6 @@
 /**
  * ECODIUM - TFG Samuel Encinas
- * RUTAS DE LA API: Eventos (Concursos)
+ * RUTAS DE LA API: Eventos
  */
 
 const express = require("express");
@@ -10,19 +10,14 @@ const Evento = require ('../models/eventos');
 // FUNCIONALIDAD: PRESENTAR CANDIDATURA A EVENTO
 router.put('/nueva-candidatura/:id', async (req, res) => {
     const body = req.body;
-    console.log("PRUEBA");
     if (!!req.body.candidatura){
         try {
-            console.log("A");
             const eventoActualizado = await Evento.findOneAndUpdate({"id": req.params.id}, {"$push": {"candidaturas" : req.body.candidatura}});
-            console.log("B");
             return res.status(200).json(eventoActualizado);
         } catch (error) {
-            console.log("E1");
             return res.status(500).json({mensaje: "error"}, error);
         }
     } else {
-        console.log("E2");
         return res.status(500).json({mensaje: "error"});
     }
 });
@@ -87,9 +82,6 @@ router.get('/eventosActivos', function(req, res) {
             const hoy = Date.now();
             const inicio = new Date(evento.fechaInicio).setHours(0,0,0,0);
             const fin = new Date(evento.fechaFin).setHours(0,0,0,0);
-            console.log(hoy);
-            console.log(inicio);
-            console.log(fin);
             if (!hoy <= fin && hoy >= inicio) {
                 var candidaturas = [];
                 evento.candidaturas.forEach(candidatura => {
@@ -137,10 +129,8 @@ router.post('/nuevo-evento', async (req, res) => {
 router.get("/evento/:id", async (req, res) => {
     try {
         const evento = await Evento.findOne({id: req.params.id});
-        console.log("B" + evento);
         const esSoloJugador = req.user.rol === ['player'];
         var candidaturas = [];
-        console.log("E" + esSoloJugador);
         // Devolvemos solo los datos públicos de las candidaturas
         if (esSoloJugador && evento.candidaturas && evento.candidaturas.length > 0) {
             evento.candidaturas.forEach(candidatura => {

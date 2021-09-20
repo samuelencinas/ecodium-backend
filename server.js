@@ -43,7 +43,7 @@ app.use('/subidas', express.static('uploads'));
 // Configuración de Mongoose y Multer
 mongoose.connect(secretMongoDB, {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false})
 .then(() => console.log("Conectado a la base de datos"))
-.catch(err => console.log('Something went wrong' + err))
+.catch(err => console.log('Error:' + err))
 app.set('trust proxy', 1)
 // Configuración de Express Session
 app.use(

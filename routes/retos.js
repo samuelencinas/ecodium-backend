@@ -12,12 +12,10 @@ const Reto = require('../models/retos');
 // FUNCIONALIDAD: Intentar resolver un reto
 router.post("/resolver/", async (req, res) => {
     const request = req.body;
-    console.log(request);
     let mensaje, respuesta;
         const reto = await Reto.findOne({id: request.id});
         const nPrueba = Number(request.pruebaSeleccionada);
         const prueba = reto.pruebas.filter((item) => item.id === nPrueba)[0];
-        console.log(reto.pruebas);
         // Creamos la nueva máquina virtual donde se ejecutará el código en modo "sandbox"
         const vm = new NodeVM({
             console: 'redirect',
@@ -105,7 +103,6 @@ router.get("/tienePermisos/:id", async (req, res) => {
                 ? true
                 : false
             : false;
-            console.log(resultado);
         return res.status(200).json(autorizado && resultado);
     } catch (e) {
         return res.status(500).json(false);
@@ -114,7 +111,6 @@ router.get("/tienePermisos/:id", async (req, res) => {
 
 // PERSISTENCIA: Obtener la info de un reto
 router.get("/reto/:id", async (req, res) => {
-    console.log(req.params.id);
     try {
         const reto = await Reto.findOne({id: req.params.id});
         var pruebas = [];
@@ -180,7 +176,6 @@ router.post('/nuevo-reto', async (req, res) => {
     if (req.user.rol.includes('organizador')){
         try {
             const nuevoReto = await Reto.create(req.body);
-            console.log(nuevoReto);
             res.status(200).json(nuevoReto);
         } catch (error) {
             return res.status(500).json({mensaje: "error", error});
@@ -192,11 +187,16 @@ router.post('/nuevo-reto', async (req, res) => {
 });
 // PERSISTENCIA: Actualizar un reto
 router.put('/actualizar/:id', async (req, res) => {
-    try {
-        const retoActualizado = await Reto.findOneAndUpdate({"id": req.params.id}, {"$set": req.body }, {new: true});
-        res.status(200).json(retoActualizado);
-    } catch (error) {
-        return res.status(500).json({mensaje: "error", error});
+    // Validación lado servidor
+    if (req.user.rol.includes('organizador')){
+        try {
+            const retoActualizado = await Reto.findOneAndUpdate({"id": req.params.id}, {"$set": req.body }, {new: true});
+            res.status(200).json(retoActualizado);
+        } catch (error) {
+            return res.status(500).json({mensaje: "error", error});
+        }        
+    } else {
+        return res.status(403).json({mensaje: "permiso denegado"});
     }
 });
 // PERSISTENCIA: Eliminar un reto

@@ -1,3 +1,8 @@
+/**
+ * ECODIUM - TFG Samuel Encinas
+ * RUTAS DE LA API: Usuarios
+ */
+
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
@@ -99,7 +104,6 @@ function comprobarNivel(usuario) {
   let nv = 0;
   while (flag) {
     if (xp < data[iterador].XP) {
-      console.log(xp + "-" + data[iterador].XP);
       nv = data[iterador].nivel;
       flag = false;
     } else {
@@ -141,7 +145,6 @@ router.get("/user", (req, res, next) => {
   if (req.isAuthenticated()) {
     const nivel = comprobarNivel(req.user);
     const notifications = req.user.notificacionesPendientes;
-    console.log(req.user);
     // Comprobamos el nivel y rango del usuario
     const datosSet = { nivel: nivel, rank: comprobarRango(nivel) };
     Usuario.findOneAndUpdate(
@@ -189,7 +192,6 @@ router.get("/existe/:nombre", async (req, res) => {
   const nick = req.params.nombre;
   try {
     const existe = (await Usuario.find({ nombreUsuario: nick }).count()) > 0;
-    console.log(existe);
     return res.status(200).json(existe);
   } catch (e) {
     return res.status(500).json(e);
