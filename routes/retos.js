@@ -176,15 +176,19 @@ router.get('/retos/', function(req, res) {
 });
 // PERSISTENCIA: Añadir un nuevo reto
 router.post('/nuevo-reto', async (req, res) => {
-    const body = {id: 112, ...req.body};
-    console.log(body);
-    try {
-        const nuevoReto = await Reto.create(body);
-        console.log(nuevoReto);
-        res.status(200).json(nuevoReto);
-    } catch (error) {
-        return res.status(500).json({mensaje: "error", error});
+    // Validación lado servidor
+    if (req.user.rol.includes('organizador')){
+        try {
+            const nuevoReto = await Reto.create(req.body);
+            console.log(nuevoReto);
+            res.status(200).json(nuevoReto);
+        } catch (error) {
+            return res.status(500).json({mensaje: "error", error});
+        }
+    } else {
+        return res.status(403).json({mensaje: "permiso denegado"});
     }
+
 });
 // PERSISTENCIA: Actualizar un reto
 router.put('/actualizar/:id', async (req, res) => {
