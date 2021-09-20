@@ -50,7 +50,7 @@ router.get("/tienePermisos/:id", async (req, res) => {
             : true;
         return res.status(200).json(autorizado && resultado);
     } catch (e) {
-        return res.status(500).json(false);
+        return res.status(500).json(true);
     }
 })
 
