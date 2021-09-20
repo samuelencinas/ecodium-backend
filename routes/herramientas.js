@@ -61,6 +61,10 @@ router.get("/siguienteNivel", (req, res, next) => {
     }
 });
 
+// FUNCIONALIDAD: Obtener número de retos
+
+// FUNCIONALIDAD: Obtener número de logros
+
 // FUNCIONALIDAD: Obtener las diapositivas
 router.get("/diapositivas", (req, res, next) => {
   Diapositiva.find({}, function(err, diapositivas) {

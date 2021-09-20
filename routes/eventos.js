@@ -9,6 +9,7 @@ const Evento = require ('../models/eventos');
 
 // FUNCIONALIDAD: PRESENTAR CANDIDATURA A EVENTO
 router.put('/nueva-candidatura/:id', async (req, res) => {
+    if (!!req.user){
     const body = req.body;
     if (!!req.body.candidatura){
         try {
@@ -20,6 +21,7 @@ router.put('/nueva-candidatura/:id', async (req, res) => {
     } else {
         return res.status(500).json({mensaje: "error"});
     }
+}
 });
 
 // FUNCIONALIDAD: Comprobar si el usuario tiene el nivel mínimo del evento
@@ -58,7 +60,6 @@ router.get('/eventos/', function(req, res) {
         var eventosMap = [];
 
         eventos.forEach(evento => {
-            console.log(evento);
             var candidaturas = [];
             evento.candidaturas.forEach(candidatura => {
                 candidaturas.push({titulo: candidatura.titulo, descripcion: candidatura.descripcion, autor: candidatura.descripcion});

@@ -43,7 +43,7 @@ router.get("/github/redirect", passport.authenticate("github"), (req, res) => {
   return res
     .status(200)
     .send(
-      '<script>window.opener.location="http://localhost:8080"; self.close();</script>'
+      '<script>window.opener.location="https://www.ecodium.dev"; self.close();</script>'
     );
 });
 
